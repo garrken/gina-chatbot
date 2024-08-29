@@ -3,7 +3,10 @@ import openai
 
 def generate_response(prompt, api_key):
     try:
+        # Sätt API-nyckeln
         openai.api_key = api_key
+        
+        # Anropa OpenAI API med den senaste metoden
         response = openai.ChatCompletion.create(
             model="gpt-4",  # Använd "gpt-3.5-turbo" om "gpt-4" inte är tillgänglig
             messages=[
@@ -13,7 +16,10 @@ def generate_response(prompt, api_key):
             max_tokens=150,
             temperature=0.7,
         )
+        
+        # Extrahera och returnera svaret från API-anropet
         return response['choices'][0]['message']['content'].strip()
+    
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -21,16 +27,18 @@ def main():
     st.title("Generisk GPT-4 Assistent")
     st.write("Ställ en fråga eller be om hjälp!")
 
-    # Input field for API key
+    # Inputfält för API-nyckeln
     api_key = st.text_input("Ange din OpenAI API-nyckel här:", type="password")
 
-    # Check if API key is provided
+    # Kontrollera om API-nyckeln har angivits
     if not api_key:
         st.warning("Vänligen ange din API-nyckel.")
         return
 
+    # Inputfält för användarens fråga
     user_input = st.text_area("Din fråga:", "", height=200)
     
+    # När användaren klickar på "Skicka"-knappen
     if st.button("Skicka"):
         if user_input:
             with st.spinner("Genererar svar..."):
