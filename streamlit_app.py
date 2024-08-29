@@ -38,5 +38,8 @@ else:
             messages=st.session_state.messages
         )
 
-        # Få och visa assistentens svar.
-        assistant_message = response['choices'][0]['message']['con
+        # Korrigera denna rad: få och visa assistentens svar.
+        assistant_message = response['choices'][0]['message']['content'].strip()
+        st.session_state.messages.append({"role": "assistant", "content": assistant_message})
+        with st.chat_message("assistant"):
+            st.markdown(assistant_message)
