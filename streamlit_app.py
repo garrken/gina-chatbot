@@ -1,5 +1,5 @@
 import streamlit as st
-import openai  # Se till att du har den senaste versionen installerad
+import openai
 
 # Visa titel och beskrivning.
 st.title("💬 AI-driven Chatbot")
@@ -10,6 +10,7 @@ st.write(
 
 # Be användaren om deras OpenAI API-nyckel via `st.text_input`.
 openai_api_key = st.text_input("OpenAI API-nyckel", type="password")
+
 if not openai_api_key:
     st.info("Vänligen lägg till din OpenAI API-nyckel för att fortsätta.", icon="🗝️")
 else:
@@ -17,7 +18,7 @@ else:
 
     # Skapa en session state-variabel för att lagra chatmeddelanden.
     if "messages" not in st.session_state:
-        st.session_state.messages = []
+        st.session_state.messages = [{"role": "system", "content": "You are a helpful assistant."}]
 
     # Visa befintliga chatmeddelanden.
     for message in st.session_state.messages:
@@ -33,19 +34,12 @@ else:
 
         # Generera ett svar med OpenAI API.
         response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                *[
-                    {"role": m["role"], "content": m["content"]}
-                    for m in st.session_state.messages
-                ],
-                {"role": "user", "content": prompt},
-            ],
+            model="gpt-3.5-turbo",  # Använd GPT-3.5-turbo eller en annan tillgänglig modell
+            messages=st.session_state.messages
         )
 
         # Få och visa assistentens svar.
-        assistant_message = response.choices[0].message['content'].strip()
+        assistant_message = response['choices'][0]['message']['content'].strip()
         st.session_state.messages.append({"role": "assistant", "content": assistant_message})
         with st.chat_message("assistant"):
             st.markdown(assistant_message)
