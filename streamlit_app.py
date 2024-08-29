@@ -32,17 +32,20 @@ else:
             st.markdown(prompt)
 
         # Generera ett svar med OpenAI API.
-        response = openai.Completion.create(
-            model="text-davinci-004",  # Använd GPT-4-modellen
-            prompt=prompt,
-            max_tokens=150,
-            n=1,
-            stop=None,
-            temperature=0.7,
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                *[
+                    {"role": m["role"], "content": m["content"]}
+                    for m in st.session_state.messages
+                ],
+                {"role": "user", "content": prompt},
+            ],
         )
 
         # Få och visa assistentens svar.
-        assistant_message = response.choices[0].text.strip()
+        assistant_message = response.choices[0].message['content'].strip()
         st.session_state.messages.append({"role": "assistant", "content": assistant_message})
         with st.chat_message("assistant"):
             st.markdown(assistant_message)
