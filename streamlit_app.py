@@ -4,7 +4,7 @@ import openai
 # Visa titel och beskrivning.
 st.title("💬 AI-driven Chatbot")
 st.write(
-    "Detta är en enkel chatbot som använder OpenAI:s GPT-4-modell för att generera svar. "
+    "Detta är en enkel chatbot som använder OpenAI:s GPT-modell för att generera svar. "
     "För att använda denna app behöver du tillhandahålla en OpenAI API-nyckel, som du kan få [här](https://platform.openai.com/account/api-keys)."
 )
 
@@ -34,12 +34,9 @@ else:
 
         # Generera ett svar med OpenAI API.
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",  # Använd GPT-3.5-turbo eller en annan tillgänglig modell
+            model="gpt-3.5-turbo",  # Använd en giltig GPT-modell som du har tillgång till
             messages=st.session_state.messages
         )
 
         # Få och visa assistentens svar.
-        assistant_message = response['choices'][0]['message']['content'].strip()
-        st.session_state.messages.append({"role": "assistant", "content": assistant_message})
-        with st.chat_message("assistant"):
-            st.markdown(assistant_message)
+        assistant_message = response['choices'][0]['message']['con
