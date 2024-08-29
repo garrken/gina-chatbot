@@ -1,52 +1,49 @@
+from openai import OpenAI
 import streamlit as st
-import openai
+from configs import OAI_MODEL, EXPORT_DIR
+from utils import export_current_conversation, num_tokens_from_messages
 
-def generate_response(prompt, api_key):
-    try:
-        # Sätt API-nyckeln
-        openai.api_key = api_key
-        
-        # Anropa OpenAI API med den senaste metoden
-        response = openai.ChatCompletion.create(
-            model="gpt-4",  # Använd "gpt-3.5-turbo" om "gpt-4" inte är tillgänglig
+st.title(f"Chat with [{OAI_MODEL}] model using Streamlit")
+st.subheader(f"Conversations will be exported to {EXPORT_DIR}")
+
+# Create a button
+export_button = st.button("Export")
+
+if export_button:
+    export_current_conversation(st.session_state.messages)
+
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+
+if "openai_model" not in st.session_state:
+    st.session_state["openai_model"] = OAI_MODEL
+
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+if prompt := st.chat_input("What is up?"):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    with st.chat_message("assistant"):
+        message_placeholder = st.empty()
+        full_response = ""
+        for response in client.chat.completions.create(
+            model=st.session_state["openai_model"],
             messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": prompt}
+                {"role": m["role"], "content": m["content"]}
+                for m in st.session_state.messages
             ],
-            max_tokens=150,
-            temperature=0.7,
-        )
-        
-        # Extrahera och returnera svaret från API-anropet
-        return response['choices'][0]['message']['content'].strip()
-    
-    except Exception as e:
-        return f"Error: {str(e)}"
+            stream=True,
+        ):
+            full_response += (response.choices[0].delta.content or "")
+            message_placeholder.markdown(full_response + "▌")
+        message_placeholder.markdown(full_response)
+    st.session_state.messages.append({"role": "assistant", "content": full_response})
 
-def main():
-    st.title("Generisk GPT-4 Assistent")
-    st.write("Ställ en fråga eller be om hjälp!")
-
-    # Inputfält för API-nyckeln
-    api_key = st.text_input("Ange din OpenAI API-nyckel här:", type="password")
-
-    # Kontrollera om API-nyckeln har angivits
-    if not api_key:
-        st.warning("Vänligen ange din API-nyckel.")
-        return
-
-    # Inputfält för användarens fråga
-    user_input = st.text_area("Din fråga:", "", height=200)
-    
-    # När användaren klickar på "Skicka"-knappen
-    if st.button("Skicka"):
-        if user_input:
-            with st.spinner("Genererar svar..."):
-                response = generate_response(user_input, api_key)
-                st.write("**Svar:**")
-                st.write(response)
-        else:
-            st.write("Vänligen skriv en fråga först.")
-
-if __name__ == "__main__":
-    main()
+# Use st.markdown with inline HTML styling to change text color
+st.markdown(f"<span style='color:red'>Total tokens used till now in conversation (your input + model's output): {num_tokens_from_messages(st.session_state.messages, OAI_MODEL)}</span>", unsafe_allow_html=True)
