@@ -6,7 +6,10 @@ def generate_response(prompt, api_key):
         openai.api_key = api_key
         response = openai.ChatCompletion.create(
             model="gpt-4",  # Använd "gpt-3.5-turbo" om "gpt-4" inte är tillgänglig
-            messages=[{"role": "user", "content": prompt}],
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": prompt}
+            ],
             max_tokens=150,
             temperature=0.7,
         )
