@@ -4,15 +4,13 @@ import openai
 def generate_response(prompt, api_key):
     try:
         openai.api_key = api_key
-        response = openai.Completion.create(
-            engine="gpt-4",  # Byt till "gpt-4" om tillgängligt
-            prompt=prompt,
+        response = openai.ChatCompletion.create(
+            model="gpt-4",  # Använd "gpt-3.5-turbo" om "gpt-4" inte är tillgänglig
+            messages=[{"role": "user", "content": prompt}],
             max_tokens=150,
-            n=1,
-            stop=None,
             temperature=0.7,
         )
-        return response.choices[0].text.strip()
+        return response['choices'][0]['message']['content'].strip()
     except Exception as e:
         return f"Error: {str(e)}"
 
